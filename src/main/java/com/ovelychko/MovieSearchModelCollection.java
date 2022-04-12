@@ -16,7 +16,7 @@ public class MovieSearchModelCollection {
     @JsonProperty("Search")
     public List<MovieSearchModel> search;
     @JsonProperty("totalResults")
-    public String totalResults;
+    public int totalResults;
     @JsonProperty("Response")
     public boolean response;
     @JsonProperty("Error")

@@ -1,5 +1,7 @@
 package com.ovelychko;
 
+import java.util.StringJoiner;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpGet;
@@ -15,10 +17,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Slf4j
 public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
-    private final String webHookPath = "";
-    private final String userName = "";
-    private final String botToken = "";
-    private final String movieSearchLink = "";
+    private final String webHookPath = "dd";
+    private final String userName = "dd";
+    private final String botToken = "dd";
+    private final String movieSearchLink = "dd";
+    private final String imbdLink = "dd";
 
     public SimpleTelegramWebhookBot() {
         log.info("WebhookTelegramController created");
@@ -34,11 +37,11 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
         ObjectMapper mapper = new ObjectMapper();
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(movieSearchLink + searchText);
+            HttpGet request = new HttpGet("dd" + searchText);
 
             MovieSearchModelCollection response = client.execute(request,
-                    httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(), MovieSearchModelCollection.class)
-            );
+                    httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
+                            MovieSearchModelCollection.class));
 
             log.info("Parsed result: {}", response);
 
@@ -46,13 +49,18 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(update.getMessage().getChatId().toString());
-                sendMessage.setText("Number of results: " + response.search.size());
+                StringJoiner joiner = new StringJoiner("\n");
+                joiner.add("Number of results: " + response.getTotalResults());
+                if (response.getTotalResults() > 10)
+                    joiner.add("Displayed 10 results only");
+                sendMessage.setText(joiner.toString());
                 this.execute(sendMessage);
 
                 for (MovieSearchModel model : response.search) {
                     SendPhoto sendPhoto = new SendPhoto();
                     sendPhoto.setChatId(update.getMessage().getChatId().toString());
-                    sendPhoto.setCaption(String.format("Title: %s (%s), ImdbID: %s \n", model.getTitle(), model.getYear(), model.getImdbID()));
+                    sendPhoto.setCaption(String.format("%s - %s (%s), [ImdbID %s](https://www.imdb.com/title/%s) \n",
+                            model.getType(), model.getTitle(), model.getYear(), model.getImdbID(), model.getImdbID()));
                     sendPhoto.setPhoto(new InputFile(model.getPoster()));
                     this.execute(sendPhoto);
                 }
