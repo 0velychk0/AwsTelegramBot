@@ -5,6 +5,7 @@ import java.util.StringJoiner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
@@ -20,7 +21,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
     private final String webHookPath = "dd";
     private final String userName = "dd";
     private final String botToken = "dd";
-    private final String movieSearchLink = "dd";
+    private final String omdbapiKey = "dd";
     private final String imbdLink = "dd";
 
     public SimpleTelegramWebhookBot() {
@@ -37,7 +38,12 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
         ObjectMapper mapper = new ObjectMapper();
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet("dd" + searchText);
+            URIBuilder builder = new URIBuilder();
+            builder.setScheme("https");
+            builder.setHost("www.omdbapi.com");
+            builder.addParameter("apikey", omdbapiKey);
+            builder.addParameter("s", searchText);
+            HttpGet request = new HttpGet(builder.build().toString());
 
             MovieSearchModelCollection response = client.execute(request,
                     httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
@@ -59,7 +65,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                 for (MovieSearchModel model : response.search) {
                     SendPhoto sendPhoto = new SendPhoto();
                     sendPhoto.setChatId(update.getMessage().getChatId().toString());
-                    sendPhoto.setCaption(String.format("%s - %s (%s), [ImdbID %s](https://www.imdb.com/title/%s) \n",
+                    sendPhoto.setCaption(String.format("%s - %s (%s), https://www.imdb.com/title/%s \n",
                             model.getType(), model.getTitle(), model.getYear(), model.getImdbID(), model.getImdbID()));
                     sendPhoto.setPhoto(new InputFile(model.getPoster()));
                     this.execute(sendPhoto);
