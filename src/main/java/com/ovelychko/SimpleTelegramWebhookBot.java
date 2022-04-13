@@ -30,11 +30,11 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final String webHookPath = "https://6fu5ajzxsi.execute-api.eu-west-3.amazonaws.com/default/AwsTelegramBotLambda";
-    private final String userName = "@movieCatalogUserBot";
-    private final String botToken = "5277197008:AAGBu7sT0G59MCi0r_fGw_6JucDw4ieZsFo";
-    private final String omdbapiKey = "1ac1214b";
-    private final String imbdLink = "https://www.imdb.com/title/";
+    private final String webHookPath = "";
+    private final String userName = "";
+    private final String botToken = "";
+    private final String omdbapiKey = "";
+    private final String imbdLink = "";
 
     public SimpleTelegramWebhookBot() {
         log.info("WebhookTelegramController created");
