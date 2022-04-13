@@ -29,12 +29,7 @@ import software.amazon.awssdk.services.lambda.model.LambdaException;
 public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
     private final ObjectMapper mapper = new ObjectMapper();
-
-    private final String webHookPath = "";
-    private final String userName = "";
-    private final String botToken = "";
-    private final String omdbapiKey = "";
-    private final String imbdLink = "";
+    private final Configures config = new Configures();
 
     public SimpleTelegramWebhookBot() {
         log.info("WebhookTelegramController created");
@@ -51,6 +46,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
         InvokeResponse res = null;
         try {
             String json = mapper.writeValueAsString(telegramUserData);
+            log.info("JSON: {}", json);
             SdkBytes payload = SdkBytes.fromUtf8String(json);
 
             InvokeRequest request = InvokeRequest.builder()
@@ -92,7 +88,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
             URIBuilder builder = new URIBuilder();
             builder.setScheme("https");
             builder.setHost("www.omdbapi.com");
-            builder.addParameter("apikey", omdbapiKey);
+            builder.addParameter("apikey", config.getOmdbapiKey());
             builder.addParameter("s", searchText);
             HttpGet request = new HttpGet(builder.build().toString());
 
@@ -117,8 +113,8 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                     if (!TextUtils.isBlank(model.getPoster()) && model.getPoster().startsWith("http")) {
                         SendPhoto sendPhoto = new SendPhoto();
                         sendPhoto.setChatId(update.getMessage().getChatId().toString());
-                        sendPhoto.setCaption(String.format("%s - %s (%s),\n https://www.imdb.com/title/%s",
-                                model.getType(), model.getTitle(), model.getYear(), model.getImdbID()));
+                        sendPhoto.setCaption(String.format("%s - %s (%s),\n %s",
+                                model.getType(), model.getTitle(), model.getYear(), config.getImbdLink() + model.getImdbID()));
                         sendPhoto.setPhoto(new InputFile(model.getPoster()));
                         this.execute(sendPhoto);
                     } else {
@@ -142,14 +138,14 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
     }
 
     public String getBotUsername() {
-        return userName;
+        return config.getUserName();
     }
 
     public String getBotToken() {
-        return botToken;
+        return config.getBotToken();
     }
 
     public String getBotPath() {
-        return webHookPath;
+        return config.getWebHookPath();
     }
 }
