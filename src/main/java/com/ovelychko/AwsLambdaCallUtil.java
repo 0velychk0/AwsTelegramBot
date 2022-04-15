@@ -47,8 +47,8 @@ public class AwsLambdaCallUtil {
     }
 
     public static void saveUserData(Update update) {
-        new Thread(new Runnable() {
-            public void run() {
+//        new Thread(new Runnable() {
+//            public void run() {
                 User user = update.getMessage().getFrom();
                 TelegramUserData telegramUserData = new TelegramUserData(
                         user.getId(),
@@ -61,13 +61,13 @@ public class AwsLambdaCallUtil {
                         user.getCanReadAllGroupMessages(),
                         user.getSupportInlineQueries());
                 invokeFunction(telegramUserData, "AwsTelegramUserDataAdd");
-            }
-        }).start();
+//            }
+//        }).start();
     }
 
     public static void saveUserRequestData(Update update) {
-        new Thread(new Runnable() {
-            public void run() {
+//        new Thread(new Runnable() {
+//            public void run() {
                 String searchText = update.getMessage().getText().trim();
                 long teleUser = update.getMessage().getFrom().getId();
                 LocalDateTime ldt = LocalDateTime.now();
@@ -78,7 +78,7 @@ public class AwsLambdaCallUtil {
                         null,
                         searchText);
                 invokeFunction(userRequestData, "AwsUserRequestDataAdd");
-            }
-        }).start();
+//            }
+//        }).start();
     }
 }
