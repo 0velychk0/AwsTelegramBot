@@ -25,15 +25,15 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
     private final Configures config = new Configures();
 
     public SimpleTelegramWebhookBot() {
-//        log.info("WebhookTelegramController created");
+        // log.info("WebhookTelegramController created");
     }
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-//        log.info("onUpdateReceived");
+        // log.info("onUpdateReceived");
 
         String searchText = update.getMessage().getText().trim();
-//        log.info("Search Text:{}", searchText);
+        // log.info("Search Text:{}", searchText);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             URIBuilder builder = new URIBuilder();
@@ -47,7 +47,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                     httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
                             MovieSearchModelCollection.class));
 
-//            log.info("Parsed result: {}", response);
+            // log.info("Parsed result: {}", response);
 
             if (response != null && response.response && response.getSearch() != null) {
 
@@ -64,9 +64,13 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                     if (!TextUtils.isBlank(model.getPoster()) && model.getPoster().startsWith("http")) {
                         SendPhoto sendPhoto = new SendPhoto();
                         sendPhoto.setChatId(update.getMessage().getChatId().toString());
-                        sendPhoto.setCaption(String.format("%s - %s (%s),\n %s",
-                                model.getType(), model.getTitle(), model.getYear(),
-                                config.getImbdLink() + model.getImdbID()));
+
+                        StringJoiner caption = new StringJoiner("\n");
+                        caption.add(String.format("%s - %s (%s),", model.getType(), model.getTitle(), model.getYear()));
+                        caption.add(String.format("More details: t.me/movieCatalogUserBot?start=getDetail-%s,", model.getImdbID()));
+                        caption.add(String.format("imdb: %s,", config.getImbdLink() + model.getImdbID()));
+                        sendPhoto.setCaption(caption.toString());
+
                         sendPhoto.setPhoto(new InputFile(model.getPoster()));
                         this.execute(sendPhoto);
                     } else {
@@ -84,7 +88,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                 this.execute(sendMessage);
             }
         } catch (Exception ex) {
-//            log.error("Error during GET request: {}", ex.toString());
+            // log.error("Error during GET request: {}", ex.toString());
         }
         return null;
     }
