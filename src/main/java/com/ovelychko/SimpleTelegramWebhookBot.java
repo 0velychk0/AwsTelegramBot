@@ -67,7 +67,6 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
                         StringJoiner caption = new StringJoiner("\n");
                         caption.add(String.format("%s - %s (%s),", model.getType(), model.getTitle(), model.getYear()));
-                        caption.add(String.format("More details: t.me/movieCatalogUserBot?start=getDetail-%s,", model.getImdbID()));
                         caption.add(String.format("imdb: %s,", config.getImbdLink() + model.getImdbID()));
                         sendPhoto.setCaption(caption.toString());
 
