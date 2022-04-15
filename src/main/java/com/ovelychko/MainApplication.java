@@ -32,6 +32,11 @@ public class MainApplication implements RequestHandler<APIGatewayProxyRequestEve
         try {
             log.info("event.getBody(): " + event.getBody());
             update = MAPPER.readValue(event.getBody(), Update.class);
+
+            AwsLambdaCallUtil.saveUserData(update);
+
+            AwsLambdaCallUtil.saveUserRequestData(update);
+
             log.info("Update: " + update);
             SENDER.onWebhookUpdateReceived(update);
         } catch (Exception e) {

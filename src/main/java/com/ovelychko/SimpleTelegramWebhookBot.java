@@ -15,15 +15,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
 
 import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.lambda.LambdaClient;
-import software.amazon.awssdk.services.lambda.model.InvokeRequest;
-import software.amazon.awssdk.services.lambda.model.InvokeResponse;
-import software.amazon.awssdk.services.lambda.model.LambdaException;
 
 @Slf4j
 public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
@@ -35,54 +28,12 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
         log.info("WebhookTelegramController created");
     }
 
-    public void invokeFunction(TelegramUserData telegramUserData) {
-        log.info("invokeFunction started");
-
-        String functionName = "AwsTelegramUserDataAdd";
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(Region.EU_WEST_3)
-                .build();
-
-        InvokeResponse res = null;
-        try {
-            String json = mapper.writeValueAsString(telegramUserData);
-            log.info("JSON: {}", json);
-            SdkBytes payload = SdkBytes.fromUtf8String(json);
-
-            InvokeRequest request = InvokeRequest.builder()
-                    .functionName(functionName)
-                    .payload(payload)
-                    .build();
-
-            res = awsLambda.invoke(request);
-            String value = res.payload().asUtf8String();
-            log.info(value);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        awsLambda.close();
-        log.info("invokeFunction finished");
-    }
-
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         log.info("onUpdateReceived");
 
         String searchText = update.getMessage().getText().trim();
         log.info("Search Text:{}", searchText);
-
-        User user = update.getMessage().getFrom();
-        TelegramUserData telegramUserData = new TelegramUserData(
-                user.getId(),
-                user.getFirstName(),
-                user.getIsBot(),
-                user.getLastName(),
-                user.getUserName(),
-                user.getLanguageCode(),
-                user.getCanJoinGroups(),
-                user.getCanReadAllGroupMessages(),
-                user.getSupportInlineQueries());
-        invokeFunction(telegramUserData);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             URIBuilder builder = new URIBuilder();
@@ -114,7 +65,8 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                         SendPhoto sendPhoto = new SendPhoto();
                         sendPhoto.setChatId(update.getMessage().getChatId().toString());
                         sendPhoto.setCaption(String.format("%s - %s (%s),\n %s",
-                                model.getType(), model.getTitle(), model.getYear(), config.getImbdLink() + model.getImdbID()));
+                                model.getType(), model.getTitle(), model.getYear(),
+                                config.getImbdLink() + model.getImdbID()));
                         sendPhoto.setPhoto(new InputFile(model.getPoster()));
                         this.execute(sendPhoto);
                     } else {
