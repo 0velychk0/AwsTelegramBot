@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 public class AwsLambdaCallUtil {
 
     private static void invokeFunction(Object data, String functionName) {
-        log.info("{} started", functionName);
+//        log.info("{} started", functionName);
         ObjectMapper mapper = new ObjectMapper();
 
         LambdaClient awsLambda = LambdaClient.builder()
@@ -28,7 +28,7 @@ public class AwsLambdaCallUtil {
 
         try {
             String json = mapper.writeValueAsString(data);
-            log.info("{} JSON: {}", functionName, json);
+//            log.info("{} JSON: {}", functionName, json);
             SdkBytes payload = SdkBytes.fromUtf8String(json);
 
             InvokeRequest request = InvokeRequest.builder()
@@ -38,12 +38,12 @@ public class AwsLambdaCallUtil {
 
             InvokeResponse res = awsLambda.invoke(request);
             String value = res.payload().asUtf8String();
-            log.info(value);
+//            log.info(value);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
         awsLambda.close();
-        log.info("{} finished", functionName);
+//        log.info("{} finished", functionName);
     }
 
     public static void saveUserData(Update update) {

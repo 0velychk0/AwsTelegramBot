@@ -25,15 +25,15 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
     private final Configures config = new Configures();
 
     public SimpleTelegramWebhookBot() {
-        log.info("WebhookTelegramController created");
+//        log.info("WebhookTelegramController created");
     }
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        log.info("onUpdateReceived");
+//        log.info("onUpdateReceived");
 
         String searchText = update.getMessage().getText().trim();
-        log.info("Search Text:{}", searchText);
+//        log.info("Search Text:{}", searchText);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             URIBuilder builder = new URIBuilder();
@@ -47,7 +47,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                     httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
                             MovieSearchModelCollection.class));
 
-            log.info("Parsed result: {}", response);
+//            log.info("Parsed result: {}", response);
 
             if (response != null && response.response && response.getSearch() != null) {
 
@@ -84,7 +84,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                 this.execute(sendMessage);
             }
         } catch (Exception ex) {
-            log.error("Error during GET request: {}", ex.toString());
+//            log.error("Error during GET request: {}", ex.toString());
         }
         return null;
     }
