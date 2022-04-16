@@ -24,16 +24,38 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
     private final ObjectMapper mapper = new ObjectMapper();
     private final Configures config = new Configures();
 
-    public SimpleTelegramWebhookBot() {
-        // log.info("WebhookTelegramController created");
-    }
+    private static String GET_DETAILS_COMMAND = "/getDetails_";
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        // log.info("onUpdateReceived");
 
         String searchText = update.getMessage().getText().trim();
-        // log.info("Search Text:{}", searchText);
+        log.info("Search Text:{}", searchText);
+
+        if (searchText.startsWith(GET_DETAILS_COMMAND)) {
+            this.handleGetDetailsCommand(update);
+        } else {
+            this.handleSearchByTitleCommand(update);
+        }
+
+        return null;
+    }
+
+    public String getBotUsername() {
+        return config.getUserName();
+    }
+
+    public String getBotToken() {
+        return config.getBotToken();
+    }
+
+    public String getBotPath() {
+        return config.getWebHookPath();
+    }
+
+    private void handleSearchByTitleCommand(Update update) {
+
+        String searchText = update.getMessage().getText().trim();
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             URIBuilder builder = new URIBuilder();
@@ -46,8 +68,6 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
             MovieSearchModelCollection response = client.execute(request,
                     httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
                             MovieSearchModelCollection.class));
-
-            // log.info("Parsed result: {}", response);
 
             if (response != null && response.response && response.getSearch() != null) {
 
@@ -68,6 +88,7 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                         StringJoiner caption = new StringJoiner("\n");
                         caption.add(String.format("%s - %s (%s),", model.getType(), model.getTitle(), model.getYear()));
                         caption.add(String.format("imdb: %s,", config.getImbdLink() + model.getImdbID()));
+                        caption.add("More details: " + GET_DETAILS_COMMAND + model.getImdbID());
                         sendPhoto.setCaption(caption.toString());
 
                         sendPhoto.setPhoto(new InputFile(model.getPoster()));
@@ -87,20 +108,34 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                 this.execute(sendMessage);
             }
         } catch (Exception ex) {
-            // log.error("Error during GET request: {}", ex.toString());
+            log.error("Error during GET request: {}", ex.toString());
         }
-        return null;
     }
 
-    public String getBotUsername() {
-        return config.getUserName();
-    }
+    private void handleGetDetailsCommand(Update update) {
 
-    public String getBotToken() {
-        return config.getBotToken();
-    }
+        String searchText = update.getMessage().getText().substring(GET_DETAILS_COMMAND.length()).trim();
 
-    public String getBotPath() {
-        return config.getWebHookPath();
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            URIBuilder builder = new URIBuilder();
+            builder.setScheme("https");
+            builder.setHost("www.omdbapi.com");
+            builder.addParameter("apikey", config.getOmdbapiKey());
+            builder.addParameter("i", searchText);
+            HttpGet request = new HttpGet(builder.build().toString());
+
+            MovieDetailsDataModel response = client.execute(request,
+                    httpResponse -> mapper.readValue(httpResponse.getEntity().getContent(),
+                            MovieDetailsDataModel.class));
+
+            if (response != null) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(update.getMessage().getChatId().toString());
+                sendMessage.setText(response.toString());
+                this.execute(sendMessage);
+            }
+        } catch (Exception ex) {
+            log.error("Error during GET request: {}", ex.toString());
+        }
     }
 }
