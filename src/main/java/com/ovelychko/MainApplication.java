@@ -36,19 +36,19 @@ public class MainApplication implements RequestHandler<APIGatewayProxyRequestEve
 
             if (update == null) {
                 return new APIGatewayProxyResponseEvent()
-                        .withStatusCode(400)
+                        .withStatusCode(200)
                         .withBody("update mapper failed")
                         .withIsBase64Encoded(false);
             }
             if (!update.hasMessage()) {
                 return new APIGatewayProxyResponseEvent()
-                        .withStatusCode(406)
+                        .withStatusCode(200)
                         .withBody("message is missing")
                         .withIsBase64Encoded(false);
             }
             if (update.getMessage().getFrom().getIsBot()) {
                 return new APIGatewayProxyResponseEvent()
-                        .withStatusCode(403)
+                        .withStatusCode(200)
                         .withBody("tele bot is not supported")
                         .withIsBase64Encoded(false);
             }
