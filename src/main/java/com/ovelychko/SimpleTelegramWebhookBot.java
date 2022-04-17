@@ -131,7 +131,8 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
             if (response != null) {
                 StringJoiner caption = new StringJoiner("\n");
 
-                caption.add(String.format("%s - %s (%s),", response.getType(), response.getTitle(), response.getYear()));
+                caption.add(String.format("%s - %s (%s),",
+                        response.getType(), response.getTitle(), response.getYear()));
 
                 caption.add(String.format("Rated: %s, Runtime: %s", response.getRated(), response.getRuntime()));
 
@@ -143,11 +144,11 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
 
                 caption.add(String.format("Country: %s", response.getCountry()));
                 caption.add(String.format("Awards: %s", response.getAwards()));
-            
-                caption.add(String.format("imdb Rating: %s, imdb Votes: %s", response.getImdbRating(), response.getImdbVotes()));
-                caption.add(String.format("imdb link: %s,", config.getImbdLink() + response.getImdbID()));
-                
 
+                caption.add(String.format("imdb Rating: %s, imdb Votes: %s",
+                        response.getImdbRating(), response.getImdbVotes()));
+                caption.add(String.format("imdb link: %s,",
+                        config.getImbdLink() + response.getImdbID()));
 
                 if (!TextUtils.isBlank(response.getPoster()) && response.getPoster().startsWith("http")) {
                     SendPhoto sendPhoto = new SendPhoto();
