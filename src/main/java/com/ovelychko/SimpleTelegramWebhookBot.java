@@ -129,10 +129,36 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                             MovieDetailsDataModel.class));
 
             if (response != null) {
-                SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(update.getMessage().getChatId().toString());
-                sendMessage.setText(response.toString());
-                this.execute(sendMessage);
+                StringJoiner caption = new StringJoiner("\n");
+
+                caption.add(String.format("%s - %s (%s),", response.getType(), response.getTitle(), response.getYear()));
+
+                caption.add(String.format("Rated: %s, Runtime: %s", response.getRated(), response.getRuntime()));
+
+                caption.add(String.format("Genre: %s", response.getGenre()));
+                caption.add(String.format("Director: %s", response.getDirector()));
+                caption.add(String.format("Writer: %s", response.getWriter()));
+                caption.add(String.format("Actors: %s", response.getActors()));
+                caption.add(String.format("Plot: %s", response.getPlot()));
+
+                caption.add(String.format("Country: %s", response.getCountry()));
+                caption.add(String.format("Awards: %s", response.getAwards()));
+            
+                caption.add(String.format("imdb Rating: %s, imdb Votes: %s", response.getImdbRating(), response.getImdbVotes()));
+                caption.add(String.format("imdb link: %s,", config.getImbdLink() + response.getImdbID()));
+                
+                if (!TextUtils.isBlank(response.getPoster()) && response.getPoster().startsWith("http")) {
+                    SendPhoto sendPhoto = new SendPhoto();
+                    sendPhoto.setChatId(update.getMessage().getChatId().toString());
+                    sendPhoto.setCaption(caption.toString());
+                    sendPhoto.setPhoto(new InputFile(response.getPoster()));
+                    this.execute(sendPhoto);
+                } else {
+                    SendMessage textMessage = new SendMessage();
+                    textMessage.setChatId(update.getMessage().getChatId().toString());
+                    textMessage.setText(caption.toString());
+                    this.execute(textMessage);
+                }
             }
         } catch (Exception ex) {
             log.error("Error during GET request: {}", ex.toString());
