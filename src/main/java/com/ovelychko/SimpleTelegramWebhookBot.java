@@ -147,6 +147,8 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                 caption.add(String.format("imdb Rating: %s, imdb Votes: %s", response.getImdbRating(), response.getImdbVotes()));
                 caption.add(String.format("imdb link: %s,", config.getImbdLink() + response.getImdbID()));
                 
+
+
                 if (!TextUtils.isBlank(response.getPoster()) && response.getPoster().startsWith("http")) {
                     SendPhoto sendPhoto = new SendPhoto();
                     sendPhoto.setChatId(update.getMessage().getChatId().toString());
