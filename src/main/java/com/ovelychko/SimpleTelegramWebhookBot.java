@@ -155,11 +155,13 @@ public class SimpleTelegramWebhookBot extends TelegramWebhookBot {
                     sendPhoto.setChatId(update.getMessage().getChatId().toString());
                     sendPhoto.setCaption(caption.toString());
                     sendPhoto.setPhoto(new InputFile(response.getPoster()));
+                    sendPhoto.setReplyToMessageId(update.getMessage().getMessageId());
                     this.execute(sendPhoto);
                 } else {
                     SendMessage textMessage = new SendMessage();
                     textMessage.setChatId(update.getMessage().getChatId().toString());
                     textMessage.setText(caption.toString());
+                    textMessage.setReplyToMessageId(update.getMessage().getMessageId());
                     this.execute(textMessage);
                 }
             }
