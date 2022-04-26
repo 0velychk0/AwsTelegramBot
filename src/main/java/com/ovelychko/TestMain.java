@@ -7,12 +7,17 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import java.util.function.Function;
+
 @Slf4j
 public class TestMain {
     private static final Configures config = new Configures();
     private static final String GET_DETAILS_COMMAND = "/getDetails_";
 
     public static void main(String[] argc) {
+        int b = 1;
+        int g = 6 / b;
+
         log.info(config.getBotToken());
         handleGetDetailsCommand();
 //        ObjectMapper mapper = new ObjectMapper();
@@ -46,8 +51,8 @@ public class TestMain {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        String searchText = "/getDetails_tt0082971".substring(GET_DETAILS_COMMAND.length()).trim();
 
+        String searchText = "/getDetails_tt0082971".substring(GET_DETAILS_COMMAND.length()).trim();
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             URIBuilder builder = new URIBuilder();
             builder.setScheme("https");

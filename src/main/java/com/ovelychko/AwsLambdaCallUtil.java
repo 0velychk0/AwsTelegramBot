@@ -1,54 +1,27 @@
 package com.ovelychko;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.lambda.LambdaClient;
-import software.amazon.awssdk.services.lambda.model.InvokeRequest;
-import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Slf4j
 public class AwsLambdaCallUtil {
 
-    private static void invokeFunction(Object data, String functionName) {
-        // log.info("{} started", functionName);
-        ObjectMapper mapper = new ObjectMapper();
-
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(Region.EU_WEST_3)
-                .build();
-
-        try {
-            String json = mapper.writeValueAsString(data);
-            // log.info("{} JSON: {}", functionName, json);
-            SdkBytes payload = SdkBytes.fromUtf8String(json);
-
-            InvokeRequest request = InvokeRequest.builder()
-                    .functionName(functionName)
-                    .payload(payload)
-                    .build();
-
-            InvokeResponse res = awsLambda.invoke(request);
-            String value = res.payload().asUtf8String();
-            // log.info(value);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        awsLambda.close();
-        // log.info("{} finished", functionName);
-    }
+    private static final String REQUEST_QUEUE_NAME = "UserRequestDataQueue";
+    private static final String USER_QUEUE_NAME = "TelegramUserDataQueue";
+    private static final Gson gson = new GsonBuilder().create();
 
     public static void saveUserData(Update update) {
-        // new Thread(new Runnable() {
-        // public void run() {
+        log.info("saveUserData SQS started");
+
         User user = update.getMessage().getFrom();
         TelegramUserData telegramUserData = new TelegramUserData(
                 user.getId(),
@@ -60,14 +33,22 @@ public class AwsLambdaCallUtil {
                 user.getCanJoinGroups(),
                 user.getCanReadAllGroupMessages(),
                 user.getSupportInlineQueries());
-        invokeFunction(telegramUserData, "AwsTelegramUserDataAdd");
-        // }
-        // }).start();
+
+        AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+
+        String queueUrl = sqs.getQueueUrl(USER_QUEUE_NAME).getQueueUrl();
+
+        SendMessageRequest send_msg_request = new SendMessageRequest()
+                .withQueueUrl(queueUrl)
+                .withMessageBody(gson.toJson(telegramUserData));
+        sqs.sendMessage(send_msg_request);
+
+        log.info("saveUserData SQS finished");
     }
 
     public static void saveUserRequestData(Update update) {
-        // new Thread(new Runnable() {
-        // public void run() {
+        log.info("saveUserRequestData SQS started");
+
         String searchText = update.getMessage().getText();
         long teleUser = update.getMessage().getFrom().getId();
 
@@ -78,8 +59,16 @@ public class AwsLambdaCallUtil {
                 teleUser,
                 null,
                 searchText);
-        invokeFunction(userRequestData, "AwsUserRequestDataAdd");
-        // }
-        // }).start();
+
+        AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+
+        String queueUrl = sqs.getQueueUrl(REQUEST_QUEUE_NAME).getQueueUrl();
+
+        SendMessageRequest send_msg_request = new SendMessageRequest()
+                .withQueueUrl(queueUrl)
+                .withMessageBody(gson.toJson(userRequestData));
+        sqs.sendMessage(send_msg_request);
+
+        log.info("saveUserRequestData SQS finished");
     }
 }
